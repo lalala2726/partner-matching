@@ -4,6 +4,7 @@ import com.zhangchuang.partner.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author chuang
@@ -19,10 +20,10 @@ public interface UserService extends IService<User> {
      * @param userAccount   用户账户
      * @param userPassword  用户密码
      * @param checkPassword 校验ID
-     * @param planetId 星球编号
+     * @param planetId      星球编号
      * @return 新用户ID
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword,String planetId);
+    long userRegister(String userAccount, String userPassword, String checkPassword, String planetId);
 
     /**
      * 用户登录
@@ -43,7 +44,16 @@ public interface UserService extends IService<User> {
 
     /**
      * 用户注销
+     *
      * @param request
      */
     int logout(HttpServletRequest request);
+
+    /**
+     * 根据标签搜索用户
+     *
+     * @param tagNameList
+     * @return
+     */
+    List<User> searchUsersByTags(List<String> tagNameList);
 }

@@ -28,7 +28,10 @@ public class User implements Serializable {
      * 用户账号
      */
     private String userAccount;
-
+    /**
+     * 标签
+     */
+    private String tags;
     /**
      * 用户头像
      */

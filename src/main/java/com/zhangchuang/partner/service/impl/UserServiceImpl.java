@@ -2,6 +2,9 @@ package com.zhangchuang.partner.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
 import com.zhangchuang.partner.common.ErrorCode;
 import com.zhangchuang.partner.exception.BusinessException;
 import com.zhangchuang.partner.mapper.UserMapper;
@@ -10,9 +13,14 @@ import com.zhangchuang.partner.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.nio.file.OpenOption;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.zhangchuang.partner.contant.UserConstant.USER_SESSION;
 
@@ -25,6 +33,12 @@ import static com.zhangchuang.partner.contant.UserConstant.USER_SESSION;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
+
+    private final UserMapper userMapper;
+
+    public UserServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword, String planetId) {
@@ -53,7 +67,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //账户不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        //注意！这边数据库的表名要和这边一致
+        //注意！这边数据库的字段要和这边一致
         queryWrapper.eq("user_account", userAccount);
         //查询账户名是否已经被注册
         long count = this.count(queryWrapper);
@@ -131,6 +145,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetUser.setRole(originUser.getRole());
         safetUser.setUserPassword(null);
         safetUser.setPlanetId(originUser.getPlanetId());
+        safetUser.setTags(originUser.getTags());
         return safetUser;
     }
 
@@ -140,6 +155,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         request.getSession().removeAttribute(USER_SESSION);
         return 1;
     }
+
+    /**
+     * 根据便签搜索用户
+     *
+     * @param tagNameList 用户要拥有的标签
+     * @return
+     */
+    @Override
+    public List<User> searchUsersByTags(List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //1.先查询所有用户
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        //2.在内存中判断是否包含所需要的标签
+        Gson gson = new Gson();
+        return userList.stream().filter(user -> {
+            String tagsStr = user.getTags();
+            if (StringUtils.isBlank(tagsStr)) {
+                return false;
+            }
+            Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {
+            }.getType());
+            tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
+            for (String tagName : tagNameList) {
+                if (tempTagNameSet.contains(tagName)) {
+                    return true;
+                }
+            }
+            return false;
+        }).map(this::getSafeuser).collect(Collectors.toList());
+    }
+
+    @Deprecated
+    private List<User> searchUsersByTagsBySQL(List<String> tagNameList) {
+        return null;
+    }
+
 }
 
 
