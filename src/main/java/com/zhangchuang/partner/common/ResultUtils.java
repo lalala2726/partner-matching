@@ -1,18 +1,17 @@
 package com.zhangchuang.partner.common;
 
 /**
- * 范湖工具类
+ * 工具类
+ * @author chuang
  * <p>
  * Created Zhangchuang on 2024/6/1 下午3:28
+ *
  */
 public class ResultUtils {
 
     /**
      * 成功
      *
-     * @param data
-     * @param <T>
-     * @return
      */
     public static <T> BaseResponse<T> success(T data) {
         return new BaseResponse<>(200, data, "操作成功");
@@ -21,8 +20,6 @@ public class ResultUtils {
     /**
      * 错误
      *
-     * @param errorCode
-     * @return
      */
     public static BaseResponse error(ErrorCode errorCode) {
         return new BaseResponse<>(errorCode);

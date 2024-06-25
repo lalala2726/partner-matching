@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: User-Partner
   datasource:
     url: jdbc:mysql://localhost:3306/partners?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
     username: root
@@ -7,6 +9,8 @@ spring:
   #    Session失效时间
   session:
     timeout: 86400
+
+
 # MyBatis 映射配置
 mybatis-plus:
 
@@ -26,3 +30,4 @@ server:
   port: 8080
   servlet:
     context-path: /api
+

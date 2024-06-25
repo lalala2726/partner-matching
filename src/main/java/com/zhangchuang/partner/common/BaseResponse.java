@@ -16,6 +16,7 @@ public class BaseResponse<T> implements Serializable {
 
     private T data;
 
+
     private String message;
 
     private String description;
