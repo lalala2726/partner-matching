@@ -9,6 +9,9 @@ spring:
   #    Session失效时间
   session:
     timeout: 86400
+    store-type: redis
+  redis:
+    url: redis://localhost:6379
 
 
 # MyBatis 映射配置
@@ -30,4 +33,7 @@ server:
   port: 8080
   servlet:
     context-path: /api
+    session:
+      cookie:
+        domain: localhost
 

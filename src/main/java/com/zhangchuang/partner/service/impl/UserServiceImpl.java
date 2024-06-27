@@ -3,7 +3,6 @@ package com.zhangchuang.partner.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.zhangchuang.partner.common.ErrorCode;
 import com.zhangchuang.partner.exception.BusinessException;
@@ -18,10 +17,10 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.nio.file.OpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.zhangchuang.partner.contant.UserConstant.ADMIN_ROLE;
 import static com.zhangchuang.partner.contant.UserConstant.USER_SESSION;
 
 /**
@@ -157,10 +156,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
-     * 根据便签搜索用户
+     * 根据标签搜索用户
      *
      * @param tagNameList 用户要拥有的标签
-     * @return
+     * @return 返回查询的用户列表
      */
     @Override
     public List<User> searchUsersByTags(List<String> tagNameList) {
@@ -189,10 +188,63 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }).map(this::getSafeuser).collect(Collectors.toList());
     }
 
+    @Override
+    public int updateUser(User user, User loginUser) {
+        //查询
+        long userId = user.getId();
+        //如果是管理员，允许更新任意用户
+        //如果不是管理员，只允许更新当前（自己的）信息
+        if (isAdmin(loginUser) && userId != loginUser.getId()) {
+            throw new BusinessException(ErrorCode.NO_PERMISSIONS, "没有权限修改此用户信息！");
+        }
+        User oldUser = userMapper.selectById(userId);
+        if (oldUser == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "未查询到此用户信息");
+        }
+        return userMapper.updateById(user);
+    }
+
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        Object userObj = request.getSession().getAttribute(USER_SESSION);
+        if (userObj == null) {
+            throw new BusinessException(ErrorCode.NO_PERMISSIONS, "未登录");
+        }
+        return (User) userObj;
+    }
+
+
+    /**
+     * 是否为管理员
+     *
+     * @return 管理员返回true
+     */
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(USER_SESSION);
+        User user = (User) userObj;
+        return user == null || user.getRole() != ADMIN_ROLE;
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @return 管理员返回true
+     */
+    @Override
+    public boolean isAdmin(User loginUser) {
+        return loginUser == null || loginUser.getRole() != ADMIN_ROLE;
+    }
+
+
     @Deprecated
     private List<User> searchUsersByTagsBySQL(List<String> tagNameList) {
         return null;
     }
+
 
 }
 

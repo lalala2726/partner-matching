@@ -19,7 +19,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.awt.peer.CanvasPeer;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,7 @@ import static com.zhangchuang.partner.contant.UserConstant.ADMIN_ROLE;
 import static com.zhangchuang.partner.contant.UserConstant.USER_SESSION;
 
 /**
- * Created Zhangchuang on 2024/5/28 16:51
+ * @author chuang
  */
 @Tag(name = "用户", description = "用户管理")
 @RestController
@@ -48,10 +47,10 @@ public class UserController {
      * @param userRegisterRequest 注册需要的信息
      * @return 返回注册成功的ID
      */
-    @Operation(summary = "注册",description = "用户注册")
+    @Operation(summary = "注册", description = "用户注册")
     @PostMapping("/register")
-    public BaseResponse<Long> userRegister( @Parameter(description = "用户注册基本信息")
-                                                @RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@Parameter(description = "用户注册基本信息")
+                                           @RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -69,12 +68,13 @@ public class UserController {
 
     /**
      * 用户登录
+     *
      * @param userLoginRequest 登录参数
-     * @param request       请求
+     * @param request          请求
      * @return 返回登录成功的用户信息
      */
     @PostMapping("/login")
-    @Operation(summary = "登录",description ="用户登录")
+    @Operation(summary = "登录", description = "用户登录")
     public BaseResponse<User> userLogin(@RequestBody @Parameter(description = "登录参数") UserLoginRequest userLoginRequest,
                                         @Parameter(description = "请求") HttpServletRequest request) {
         if (userLoginRequest == null) {
@@ -92,9 +92,9 @@ public class UserController {
     /**
      * 请求用户注销
      *
-     * @param request  请求
+     * @param request 请求
      */
-    @Operation(summary = "注销",description ="用户注销")
+    @Operation(summary = "注销", description = "用户注销")
     @PostMapping("/logout")
     public BaseResponse<Integer> logout(@Parameter(description = "请求") HttpServletRequest request) {
         if (request == null) {
@@ -106,12 +106,13 @@ public class UserController {
 
     /**
      * 获取当前用户
+     *
      * @param request 请求
-     * @return  返回当前用户
+     * @return 返回当前用户
      */
-    @Operation(summary = "获取当前用户",description ="获取当前用户")
+    @Operation(summary = "获取当前用户", description = "获取当前用户")
     @GetMapping("/current")
-    public BaseResponse<User> getCurrentUser( HttpServletRequest request) {
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_SESSION);
         User currentUser = (User) userObj;
         if (currentUser == null) {
@@ -124,16 +125,17 @@ public class UserController {
 
     /**
      * 搜索用户
+     *
      * @param username 用户名
-     * @param request 请求
+     * @param request  请求
      * @return 返回用户列表
      */
-    @Operation(summary = "搜索用户",description ="搜索用户")
+    @Operation(summary = "搜索用户", description = "搜索用户")
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(@Parameter(description = "用户名") String username,
                                                 @Parameter(description = "请求") HttpServletRequest request) {
 
-        if (isAdmin(request)) {
+        if (userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_PERMISSIONS);
         }
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
@@ -147,17 +149,38 @@ public class UserController {
 
 
     /**
-     * 删除用户
-     * @param id 用户ID
-     * @param request 请求
-     * @return  返回是否删除成功
+     * 修改用户信息
+     *
+     * @param user    被修改的用户信息
+     * @param request 用户获取用户Session
+     * @return 返回修改结果
      */
-    @Operation(summary = "删除用户",description ="删除用户")
+    @Operation(summary = "更新用户", description = "管理员可以更新所有用户，不是管理员即可更新自己的")
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@Parameter(description = "需要修改的用户信息")
+                                            @RequestBody User user, HttpServletRequest request) {
+        //1.检验参数是否为空
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空！");
+        }
+        User loginUser = userService.getLoginUser(request);
+        int result = userService.updateUser(user, loginUser);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 删除用户
+     *
+     * @param id      用户ID
+     * @param request 请求
+     * @return 返回是否删除成功
+     */
+    @Operation(summary = "删除用户", description = "删除用户")
     @DeleteMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestParam("id") @Parameter(description = "用户ID") Long id,
                                             @Parameter(description = "请求") HttpServletRequest request) {
         //判断是否是管理员
-        if (isAdmin(request)) {
+        if (userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_PERMISSIONS);
         }
         //判断ID是否合法
@@ -171,28 +194,19 @@ public class UserController {
 
     /**
      * 通过标签搜索用户
-     * @param tagList 标签列表
-     * @return  返回用户列表
-     */
-    @Operation(summary = "通过标签搜索用户",description ="通过标签搜索用户")
-    @GetMapping
-    public BaseResponse<List<User>> searchUserByTags(List<String> tagList){
-        if (CollectionUtils.isEmpty(tagList)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"标签为空");
-        }
-        List<User> users = userService.searchUsersByTags(tagList);
-        return ResultUtils.success(users);
-    }
-
-    /**
-     * 是否为管理员
      *
-     * @return 管理员返回true
+     * @param tagNameList 标签列表
+     * @return 返回用户列表
      */
-    private boolean isAdmin(HttpServletRequest request) {
-        Object userObj = request.getSession().getAttribute(USER_SESSION);
-        User user = (User) userObj;
-        return user == null || user.getRole() != ADMIN_ROLE;
+    @Operation(summary = "通过标签搜索用户", description = "通过标签搜索用户")
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUserByTags(@Parameter(description = "标签集合")
+                                                     @RequestParam(required = false) List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "标签为空");
+        }
+        List<User> users = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(users);
     }
 
 

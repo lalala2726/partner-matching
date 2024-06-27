@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author chuang
  */
+
 @SpringBootApplication
 @MapperScan("com.zhangchuang.partner.mapper")
 public class PartnersApplication {
