@@ -14,14 +14,19 @@ import com.zhangchuang.partner.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.zhangchuang.partner.contant.UserConstant.ADMIN_ROLE;
@@ -33,9 +38,9 @@ import static com.zhangchuang.partner.contant.UserConstant.USER_SESSION;
 @Tag(name = "用户", description = "用户管理")
 @RestController
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
 
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -54,7 +59,7 @@ public class UserController {
     public BaseResponse<Long> userRegister(@Parameter(description = "用户注册基本信息")
                                            @RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"非法请求");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "非法请求");
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
@@ -80,7 +85,7 @@ public class UserController {
     public BaseResponse<User> userLogin(@RequestBody @Parameter(description = "登录参数") UserLoginRequest userLoginRequest,
                                         @Parameter(description = "请求") HttpServletRequest request) {
         if (userLoginRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "非法的请求！");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请输入账号密码!");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
@@ -151,19 +156,20 @@ public class UserController {
 
 
     /**
-     * 推荐用户
+     * 推荐用户，此方法使用了Redis缓存，过期时间为十分钟
      *
      * @param request 请求
      * @return 返回用户列表
      */
     @Operation(summary = "推荐用户", description = "根据用户的特征，推荐合适的用户")
     @GetMapping("/recommend")
-    public BaseResponse<Page<User>> recommendUsers(@Parameter(description = "页面大小") long pageSize,
-                                                   @Parameter(description = "页面总数 ") long pageNum,
+    public BaseResponse<Page<User>> recommendUsers(@Parameter(description = "页面大小")
+                                                   @RequestParam(defaultValue = "10", value = "pageSize") Long pageSize,
+                                                   @Parameter(description = "页面总数 ")
+                                                   @RequestParam(defaultValue = "1", value = "pageNum") Long pageNum,
                                                    @Parameter(description = "请求") HttpServletRequest request) {
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        Page<User> list = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
-        return ResultUtils.success(list);
+        Page<User> userPage = userService.recommendUsers(pageSize, pageNum, request);
+        return ResultUtils.success(userPage);
     }
 
 

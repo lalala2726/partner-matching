@@ -1,16 +1,20 @@
 package com.zhangchuang.partner.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.zhangchuang.partner.common.ErrorCode;
+import com.zhangchuang.partner.common.ResultUtils;
 import com.zhangchuang.partner.exception.BusinessException;
 import com.zhangchuang.partner.mapper.UserMapper;
 import com.zhangchuang.partner.model.domain.User;
 import com.zhangchuang.partner.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -18,6 +22,7 @@ import org.springframework.util.DigestUtils;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.zhangchuang.partner.contant.UserConstant.ADMIN_ROLE;
@@ -35,8 +40,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserMapper userMapper) {
+    private final RedisTemplate redisTemplate;
+
+    public UserServiceImpl(UserMapper userMapper, RedisTemplate redisTemplate) {
         this.userMapper = userMapper;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -214,6 +222,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.NO_PERMISSIONS, "未登录");
         }
         return (User) userObj;
+    }
+
+    @Override
+    public Page<User> recommendUsers(Long pageSize, Long pageNum, HttpServletRequest request) {
+        //如果有缓存直接读
+        User loginUser = getLoginUser(request);
+        String redisKey = String.format("user:recommend:%s", loginUser.getId());
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        Page<User> userPage = (Page<User>) valueOperations.get(redisKey);
+        if (userPage != null) {
+            return userPage;
+        }
+        //无缓存查询数据库
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        Page<User> list = this.page(new Page<>(pageNum, pageSize), userQueryWrapper);
+        //写缓存
+        try {
+            valueOperations.set(redisKey, list, 10, TimeUnit.MINUTES); // 设置10分钟过期时间
+        } catch (Exception e) {
+            log.error("redis set key error", e);
+        }
+        return list;
     }
 
 

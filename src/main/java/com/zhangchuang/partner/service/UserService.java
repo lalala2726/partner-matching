@@ -1,5 +1,6 @@
 package com.zhangchuang.partner.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhangchuang.partner.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -71,6 +72,9 @@ public interface UserService extends IService<User> {
      * @return 返回当前登录用户
      */
     User getLoginUser(HttpServletRequest request);
+
+
+    Page<User> recommendUsers(Long pageSize, Long pageNum, HttpServletRequest request);
 
     /**
      * 是否为管理员

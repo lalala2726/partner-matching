@@ -11,7 +11,9 @@ spring:
     timeout: 86400
     store-type: redis
   redis:
-    url: redis://localhost:6379
+    host: localhost
+    port: 6379
+    database: 0
 
 
 # MyBatis 映射配置
