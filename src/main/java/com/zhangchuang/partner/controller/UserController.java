@@ -1,6 +1,8 @@
 package com.zhangchuang.partner.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhangchuang.partner.common.BaseResponse;
 import com.zhangchuang.partner.common.ErrorCode;
 import com.zhangchuang.partner.common.ResultUtils;
@@ -149,6 +151,23 @@ public class UserController {
 
 
     /**
+     * 推荐用户
+     *
+     * @param request 请求
+     * @return 返回用户列表
+     */
+    @Operation(summary = "推荐用户", description = "根据用户的特征，推荐合适的用户")
+    @GetMapping("/recommend")
+    public BaseResponse<Page<User>> recommendUsers(@Parameter(description = "页面大小") long pageSize,
+                                                   @Parameter(description = "页面总数 ") long pageNum,
+                                                   @Parameter(description = "请求") HttpServletRequest request) {
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        Page<User> list = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
+        return ResultUtils.success(list);
+    }
+
+
+    /**
      * 修改用户信息
      *
      * @param user    被修改的用户信息
@@ -177,7 +196,7 @@ public class UserController {
      */
     @Operation(summary = "删除用户", description = "删除用户")
     @DeleteMapping("/delete")
-    public BaseResponse<Boolean> deleteUser(@RequestParam("id") @Parameter(description = "用户ID") Long id,
+    public BaseResponse<Boolean> deleteUser(@Parameter(description = "用户ID") @RequestParam("id") Long id,
                                             @Parameter(description = "请求") HttpServletRequest request) {
         //判断是否是管理员
         if (userService.isAdmin(request)) {
