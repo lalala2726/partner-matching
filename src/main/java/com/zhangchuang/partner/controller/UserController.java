@@ -54,7 +54,7 @@ public class UserController {
     public BaseResponse<Long> userRegister(@Parameter(description = "用户注册基本信息")
                                            @RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"非法请求");
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
@@ -80,12 +80,12 @@ public class UserController {
     public BaseResponse<User> userLogin(@RequestBody @Parameter(description = "登录参数") UserLoginRequest userLoginRequest,
                                         @Parameter(description = "请求") HttpServletRequest request) {
         if (userLoginRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "非法的请求！");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数传入错误");
         }
         User user = userService.userLogin(userAccount, userPassword, request);
         return ResultUtils.success(user);
@@ -100,7 +100,7 @@ public class UserController {
     @PostMapping("/logout")
     public BaseResponse<Integer> logout(@Parameter(description = "请求") HttpServletRequest request) {
         if (request == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "非法的请求");
         }
         int logout = userService.logout(request);
         return ResultUtils.success(logout);
@@ -118,7 +118,7 @@ public class UserController {
         Object userObj = request.getSession().getAttribute(USER_SESSION);
         User currentUser = (User) userObj;
         if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
+            throw new BusinessException(ErrorCode.NOT_LOGIN, "请先登录");
         }
         long userId = currentUser.getId();
         User safeuser = userService.getSafeuser(userService.getById(userId));
@@ -138,7 +138,7 @@ public class UserController {
                                                 @Parameter(description = "请求") HttpServletRequest request) {
 
         if (userService.isAdmin(request)) {
-            throw new BusinessException(ErrorCode.NO_PERMISSIONS);
+            throw new BusinessException(ErrorCode.NO_PERMISSIONS, "你没有权限执行此操作!");
         }
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
@@ -200,7 +200,7 @@ public class UserController {
                                             @Parameter(description = "请求") HttpServletRequest request) {
         //判断是否是管理员
         if (userService.isAdmin(request)) {
-            throw new BusinessException(ErrorCode.NO_PERMISSIONS);
+            throw new BusinessException(ErrorCode.NO_PERMISSIONS, "你没有权限执行此操作!");
         }
         //判断ID是否合法
         if (id >= 0) {
