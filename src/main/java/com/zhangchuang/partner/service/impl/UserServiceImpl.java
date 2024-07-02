@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.zhangchuang.partner.common.ErrorCode;
-import com.zhangchuang.partner.common.ResultUtils;
 import com.zhangchuang.partner.exception.BusinessException;
 import com.zhangchuang.partner.mapper.UserMapper;
 import com.zhangchuang.partner.model.domain.User;
@@ -20,8 +19,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
-
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         this.redisTemplate = redisTemplate;
     }
 
+
+    /**
+     * 注册用户信息
+     *
+     * @param userAccount   用户账户
+     * @param userPassword  用户密码
+     * @param checkPassword 校验ID
+     * @param planetId      星球编号
+     * @return 返回注册用户的编号
+     */
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword, String planetId) {
 
@@ -97,6 +108,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user.getId();
     }
 
+    /**
+     * 登录账号
+     *
+     * @param userAccount  用户账号
+     * @param userPassword 用户密码
+     * @param request      请求
+     * @return 登录成功后返回该用户的信息
+     */
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         //1.校验
@@ -134,6 +153,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
 
+    /**
+     * 脱敏敏感信息
+     *
+     * @param originUser 未脱敏的用户信息
+     * @return 返回脱敏后的用户信息
+     */
     @Override
     public User getSafeuser(User originUser) {
         if (originUser == null) {
@@ -156,6 +181,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return safetUser;
     }
 
+    /**
+     * 用户注销
+     *
+     * @param request 获取Session会话
+     */
     @Override
     public int logout(HttpServletRequest request) {
         //移除登录态
@@ -196,6 +226,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }).map(this::getSafeuser).collect(Collectors.toList());
     }
 
+    /**
+     * 更新用户信息
+     * 如果是管理员可以修改任意用户信息，如果不是管理员只能修改自己的用户信息
+     *
+     * @param user      用户信息
+     * @param loginUser 当前登录的用户信息
+     * @return 返回修改后的结果，大于0就代表执行成功
+     */
     @Override
     public int updateUser(User user, User loginUser) {
         //查询
@@ -212,6 +250,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return userMapper.updateById(user);
     }
 
+    /**
+     * 获取当前登录的用户信息
+     *
+     * @param request 获取Session会话
+     * @return 返回用户实体
+     */
     @Override
     public User getLoginUser(HttpServletRequest request) {
         if (request == null) {
@@ -224,6 +268,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return (User) userObj;
     }
 
+    /**
+     * 首页推荐用户，用户首次调用此方法会先在Redis查询是否含有数据如果有直接返回，如果没有查询数据然后存入Redis，然后返回数据
+     *
+     * @param pageSize 页面列数
+     * @param pageNum  第几页
+     * @param request  请求
+     * @return 个性化推荐用户
+     */
     @Override
     public Page<User> recommendUsers(Long pageSize, Long pageNum, HttpServletRequest request) {
         //如果有缓存直接读
@@ -270,6 +322,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
 
+    /**
+     * 已弃用该方法
+     */
     @Deprecated
     private List<User> searchUsersByTagsBySQL(List<String> tagNameList) {
         return null;
