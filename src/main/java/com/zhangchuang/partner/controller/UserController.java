@@ -1,35 +1,27 @@
 package com.zhangchuang.partner.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhangchuang.partner.common.BaseResponse;
 import com.zhangchuang.partner.common.ErrorCode;
 import com.zhangchuang.partner.common.ResultUtils;
 import com.zhangchuang.partner.exception.BusinessException;
 import com.zhangchuang.partner.model.domain.User;
-import com.zhangchuang.partner.model.domain.request.UserLoginRequest;
-import com.zhangchuang.partner.model.domain.request.UserRegisterRequest;
+import com.zhangchuang.partner.model.request.UserLoginRequest;
+import com.zhangchuang.partner.model.request.UserRegisterRequest;
 import com.zhangchuang.partner.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.bind.DefaultValue;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.zhangchuang.partner.contant.UserConstant.ADMIN_ROLE;
 import static com.zhangchuang.partner.contant.UserConstant.USER_SESSION;
 
 /**

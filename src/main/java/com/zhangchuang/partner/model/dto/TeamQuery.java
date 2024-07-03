@@ -1,13 +1,16 @@
-package com.zhangchuang.partner.model.domain.dto;
+package com.zhangchuang.partner.model.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.zhangchuang.partner.common.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author chuang
  */
-public class TeamQuery {
+@EqualsAndHashCode(callSuper = true)
+public class TeamQuery extends PageRequest {
     /**
      *
      */

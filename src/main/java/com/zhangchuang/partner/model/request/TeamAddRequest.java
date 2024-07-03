@@ -1,26 +1,18 @@
-package com.zhangchuang.partner.model.domain;
-
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.io.Serializable;
-import java.util.Date;
+package com.zhangchuang.partner.model.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-/**
- * 队伍表
- */
-@TableName(value = "team")
-@Data
-public class Team implements Serializable {
+import java.io.Serializable;
+import java.util.Date;
 
-    /**
-     * 队伍编号
-     */
-    @Schema(title = "队伍编号")
-    @TableId(type = IdType.AUTO)
-    private Long id;
+/**
+ * @author chuang
+ */
+@Data
+public class TeamAddRequest implements Serializable {
+
+    private static final long serialVersionUID = 3248327974298L;
 
     /**
      * 队伍名称
@@ -64,25 +56,4 @@ public class Team implements Serializable {
     @Schema(title = "队伍密码")
     private String password;
 
-    /**
-     * 创建时间
-     */
-    @Schema(title = "创建时间")
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @Schema(title = "用修改时间")
-    private Date updateTime;
-
-    /**
-     * 是否删除
-     */
-    @Schema(title = "是否删除")
-    @TableLogic
-    private Integer isDelete;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 111L;
 }

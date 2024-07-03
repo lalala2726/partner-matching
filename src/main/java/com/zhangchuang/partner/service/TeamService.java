@@ -2,12 +2,21 @@ package com.zhangchuang.partner.service;
 
 import com.zhangchuang.partner.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.zhangchuang.partner.model.domain.User;
 
 /**
-* @author chuang
-* @description 针对表【team(队伍表)】的数据库操作Service
-* @createDate 2024-07-02 18:07:55
-*/
+ * @author chuang
+ */
 public interface TeamService extends IService<Team> {
+
+
+    /**
+     * 创建队伍
+     *
+     * @param team       队伍信息
+     * @param longinUser 当前登录用户
+     * @return 返回创建结果
+     */
+    long addTeam(Team team, User longinUser);
 
 }
