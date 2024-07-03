@@ -45,3 +45,35 @@ CREATE TABLE `user`
   ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+# 队伍表
+create table team
+(
+    id          bigint auto_increment primary key,
+    name        varchar(256)                       not null comment '队伍名称',
+    description varchar(1024)                      null comment '队伍描述',
+    max_number  int      default 1                 not null comment '队伍最大人数',
+    expire_time datetime                           null comment '过期时间',
+    user_id     bigint comment '用户ID',
+    status      int      default 0                 not null comment '1 - 公开 ,1 - 私有 ,2 - 加密',
+    password    varchar(512)                       null comment '密码',
+    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '修改时间',
+    is_delete   tinyint  default 0                 not null comment '是否删除'
+) comment '队伍表';
+
+
+# 用户队伍关系表
+create table user_team
+(
+    id          bigint auto_increment comment 'ID' primary key,
+    user_id     bigint comment '用户ID',
+    team_id     bigint comment '队伍ID',
+    join_time   datetime                           not null comment '加入时间',
+    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '修改时间',
+    is_delete   tinyint  default 0                 not null comment '是否删除'
+) comment '用户队伍关系表';
+
+
+
