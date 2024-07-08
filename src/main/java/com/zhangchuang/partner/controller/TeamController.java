@@ -10,6 +10,9 @@ import com.zhangchuang.partner.model.domain.Team;
 import com.zhangchuang.partner.model.domain.User;
 import com.zhangchuang.partner.model.dto.TeamQuery;
 import com.zhangchuang.partner.model.request.TeamAddRequest;
+import com.zhangchuang.partner.model.request.TeamJoinRequest;
+import com.zhangchuang.partner.model.request.TeamUpdateRequest;
+import com.zhangchuang.partner.model.vo.TeamUserVO;
 import com.zhangchuang.partner.service.TeamService;
 import com.zhangchuang.partner.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -85,17 +88,19 @@ public class TeamController {
     /**
      * 更新队伍信息
      *
-     * @param team 队伍信息
+     * @param teamUpdateRequest 队伍信息
      * @return 返回更新结果
      */
     @PostMapping("/update")
     @Operation(summary = "更新队伍")
     public BaseResponse<Boolean> updateTeam(@Parameter(description = "传入修改后的队伍信息，注意ID不能被修改")
-                                            @RequestBody Team team) {
-        if (team == null) {
+                                            @RequestBody TeamUpdateRequest teamUpdateRequest,
+                                            HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数非法！");
         }
-        boolean result = teamService.updateById(team);
+        boolean result = teamService.updateTeam(teamUpdateRequest, loginUser);
         if (!result) {
             throw new BusinessException(ErrorCode.SERVER_ERROR, "更新失败！");
         }
@@ -131,14 +136,13 @@ public class TeamController {
      */
     @Operation(summary = "获取队伍列表")
     @GetMapping("/list")
-    public BaseResponse<List<Team>> listTeams(@RequestBody TeamQuery teamQuery) {
+    public BaseResponse<List<TeamUserVO>> listTeams(@RequestBody TeamQuery teamQuery, HttpServletRequest request) {
+        System.out.println("请求参数：" + teamQuery);
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数非法!");
         }
-        Team team = new Team();
-        BeanUtils.copyProperties(team, teamQuery);
-        QueryWrapper<Team> teamQueryWrapper = new QueryWrapper<>(team);
-        List<Team> list = teamService.list(teamQueryWrapper);
+        boolean isAdmin = userService.isAdmin(request);
+        List<TeamUserVO> list = teamService.listTeams(teamQuery, isAdmin);
         return ResultUtils.success(list);
     }
 
@@ -160,7 +164,22 @@ public class TeamController {
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
         Page<Team> resultPage = teamService.page(page, queryWrapper);
         return ResultUtils.success(resultPage);
+    }
 
+
+    /**
+     * 加入队伍
+     * @param teamJoinRequest 请求参数
+     * @return  加入结果
+     */
+    @GetMapping("/join")
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest,HttpServletRequest request){
+        if (teamJoinRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean team = teamService.joinTeam(teamJoinRequest, loginUser);
+        return ResultUtils.success(team);
     }
 
 }

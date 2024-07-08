@@ -73,7 +73,7 @@ public class Team implements Serializable {
     /**
      * 修改时间
      */
-    @Schema(title = "用修改时间")
+    @Schema(title = "修改时间")
     private Date updateTime;
 
     /**

@@ -1,6 +1,5 @@
-package com.zhangchuang.partner.model.domain;
+package com.zhangchuang.partner.model.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -8,18 +7,20 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
+ * 用户包装类（脱敏）
+ *
  * @author chuang
  */
-@Schema(title = "用户信息")
-@TableName(value = "user")
 @Data
-public class User implements Serializable {
+public class UserVO implements Serializable {
+
+    private static final long serialVersionUID = -3063730116564880030L;
+
 
     /**
      * 用户编号
      */
     @Schema(title = "用户编号")
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -59,12 +60,6 @@ public class User implements Serializable {
     private Integer role;
 
     /**
-     * 密码
-     */
-    @Schema(title = "密码")
-    private String userPassword;
-
-    /**
      * 手机号码
      */
     @Schema(title = "手机号码")
@@ -100,13 +95,5 @@ public class User implements Serializable {
     @Schema(title = "更新时间")
     private Date updateTime;
 
-    /**
-     * 是否删除
-     */
-    @TableLogic
-    @Schema(title = "是否删除")
-    private Integer isDelete;
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 }

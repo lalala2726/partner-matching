@@ -1,23 +1,24 @@
-package com.zhangchuang.partner.model.dto;
+package com.zhangchuang.partner.model.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.zhangchuang.partner.common.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
+ * 队伍和用户信息封装类(脱敏)
+ *
  * @author chuang
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class TeamQuery extends PageRequest {
+public class TeamUserVO implements Serializable {
+
+    private static final long serialVersionUID = 260995623971166098L;
     /**
-     *
+     * 队伍编号
      */
     @Schema(title = "队伍编号")
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -32,20 +33,17 @@ public class TeamQuery extends PageRequest {
     @Schema(title = "队伍描述")
     private String description;
 
-
-    /**
-     * 队伍关键字
-     */
-    @Schema(title = "关键字")
-    private String keyword;
-
-
     /**
      * 队伍最大人数
      */
     @Schema(title = "队伍最大人数")
     private Integer maxNumber;
 
+    /**
+     * 过期时间
+     */
+    @Schema(title = "队伍过期时间")
+    private Date expireTime;
 
     /**
      * 用户ID
@@ -58,5 +56,27 @@ public class TeamQuery extends PageRequest {
      */
     @Schema(title = "队伍状态")
     private Integer status;
+
+
+    /**
+     * 创建时间
+     */
+    @Schema(title = "创建时间")
+    private Date createTime;
+
+    /**
+     * 修改时间
+     */
+    @Schema(title = "修改时间")
+    private Date updateTime;
+
+
+    /**
+     * 创建人入队列表
+     */
+    @Schema(title = "创建人入队列表 ")
+    UserVO createUser;
+
+
 
 }

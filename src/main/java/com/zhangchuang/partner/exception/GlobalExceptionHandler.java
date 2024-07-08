@@ -4,6 +4,7 @@ import com.zhangchuang.partner.common.BaseResponse;
 import com.zhangchuang.partner.common.ErrorCode;
 import com.zhangchuang.partner.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -27,5 +28,11 @@ public class GlobalExceptionHandler {
     public BaseResponse runtimeExceptionHandler(RuntimeException exception) {
         log.error("runtimeException", exception);
         return ResultUtils.error(ErrorCode.SERVER_ERROR, exception.getMessage(), "");
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public BaseResponse httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException exception) {
+        log.error("httpMessageNotReadableExceptionHandler", exception);
+        return ResultUtils.error(ErrorCode.SERVER_REQUEST_ERROR, exception.getMessage(), "服务器未接受到您的请求体");
     }
 }

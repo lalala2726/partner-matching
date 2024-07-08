@@ -6,10 +6,11 @@ package com.zhangchuang.partner.contant;
  * Created Zhangchuang on 2024/5/28 23:34
  */
 public interface UserConstant {
+
     /**
      * 用户登录键
      */
-    String USER_SESSION = "userLonginState";
+    String USER_SESSION = "userLoginStatus";
 
 
     /*------------权限-------------*/

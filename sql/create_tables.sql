@@ -75,5 +75,11 @@ create table user_team
     is_delete   tinyint  default 0                 not null comment '是否删除'
 ) comment '用户队伍关系表';
 
-
-
+SELECT id,name,description,max_number,expire_time,user_id,status,password,create_time,update_time,is_delete
+FROM team
+WHERE is_delete=0
+  AND ((name LIKE '%鱼皮小队%'
+    OR description LIKE '%鱼皮小队%')
+           AND status = 0
+           AND (expire_time < '2024-07-04 21:03:45.02')
+    OR expire_time IS NULL);
