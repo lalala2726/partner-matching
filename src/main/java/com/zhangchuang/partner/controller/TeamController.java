@@ -11,6 +11,7 @@ import com.zhangchuang.partner.model.domain.User;
 import com.zhangchuang.partner.model.dto.TeamQuery;
 import com.zhangchuang.partner.model.request.TeamAddRequest;
 import com.zhangchuang.partner.model.request.TeamJoinRequest;
+import com.zhangchuang.partner.model.request.TeamQuitRequest;
 import com.zhangchuang.partner.model.request.TeamUpdateRequest;
 import com.zhangchuang.partner.model.vo.TeamUserVO;
 import com.zhangchuang.partner.service.TeamService;
@@ -169,12 +170,13 @@ public class TeamController {
 
     /**
      * 加入队伍
+     *
      * @param teamJoinRequest 请求参数
-     * @return  加入结果
+     * @return 加入结果
      */
     @GetMapping("/join")
-    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest,HttpServletRequest request){
-        if (teamJoinRequest == null){
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest request) {
+        if (teamJoinRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
@@ -182,4 +184,19 @@ public class TeamController {
         return ResultUtils.success(team);
     }
 
+    /**
+     * 退出队伍
+     *
+     * @param teamQuitRequest 退出队伍请求体
+     * @return 返回退出结果
+     */
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuitRequest teamQuitRequest, HttpServletRequest request) {
+        if (teamQuitRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean team = teamService.quitTeam(teamQuitRequest, loginUser);
+        return ResultUtils.success(team);
+    }
 }
